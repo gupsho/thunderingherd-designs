@@ -1,0 +1,239 @@
+{
+  "name": "Untitled Architecture",
+  "nodes": [
+    {
+      "id": "client",
+      "type": "client",
+      "position": {
+        "x": 0,
+        "y": 180
+      },
+      "config": {
+        "instances": 1,
+        "capacityPerInstance": 0,
+        "latencyMs": 0,
+        "queueLimit": 0,
+        "hitRate": 0,
+        "costPerHour": 0,
+        "label": "Event Stream"
+      }
+    },
+    {
+      "id": "collector",
+      "type": "server",
+      "position": {
+        "x": 200,
+        "y": 180
+      },
+      "config": {
+        "instances": 3,
+        "capacityPerInstance": 5000,
+        "latencyMs": 3,
+        "queueLimit": 10000,
+        "hitRate": 0,
+        "costPerHour": 0.06,
+        "label": "Event Collector (Go)",
+        "variant": "go"
+      }
+    },
+    {
+      "id": "kafka",
+      "type": "queue",
+      "position": {
+        "x": 430,
+        "y": 180
+      },
+      "config": {
+        "instances": 1,
+        "capacityPerInstance": 50000,
+        "latencyMs": 2,
+        "queueLimit": 1000000,
+        "hitRate": 0,
+        "costPerHour": 0.08,
+        "label": "Kafka",
+        "variant": "kafka"
+      }
+    },
+    {
+      "id": "flink",
+      "type": "data_pipeline",
+      "position": {
+        "x": 660,
+        "y": 60
+      },
+      "config": {
+        "instances": 2,
+        "capacityPerInstance": 8000,
+        "latencyMs": 50,
+        "queueLimit": 500000,
+        "hitRate": 0,
+        "costPerHour": 0.35,
+        "label": "Flink (Real-time)",
+        "variant": "flink",
+        "batchSize": 500
+      }
+    },
+    {
+      "id": "spark",
+      "type": "data_pipeline",
+      "position": {
+        "x": 660,
+        "y": 300
+      },
+      "config": {
+        "instances": 1,
+        "capacityPerInstance": 10000,
+        "latencyMs": 2000,
+        "queueLimit": 500000,
+        "hitRate": 0,
+        "costPerHour": 0.4,
+        "label": "Spark (Batch)",
+        "variant": "spark",
+        "batchSize": 5000
+      }
+    },
+    {
+      "id": "redis",
+      "type": "cache",
+      "position": {
+        "x": 900,
+        "y": 0
+      },
+      "config": {
+        "instances": 1,
+        "capacityPerInstance": 10000,
+        "latencyMs": 0.5,
+        "queueLimit": 0,
+        "hitRate": 0.9,
+        "costPerHour": 0.03,
+        "label": "Live Metrics Cache",
+        "variant": "redis"
+      }
+    },
+    {
+      "id": "clickhouse",
+      "type": "database",
+      "position": {
+        "x": 900,
+        "y": 120
+      },
+      "config": {
+        "instances": 1,
+        "capacityPerInstance": 5000,
+        "latencyMs": 10,
+        "queueLimit": 20000,
+        "hitRate": 0,
+        "costPerHour": 0.2,
+        "label": "ClickHouse",
+        "variant": "clickhouse"
+      }
+    },
+    {
+      "id": "data_lake",
+      "type": "blob_storage",
+      "position": {
+        "x": 900,
+        "y": 300
+      },
+      "config": {
+        "instances": 1,
+        "capacityPerInstance": 3000,
+        "latencyMs": 20,
+        "queueLimit": 0,
+        "hitRate": 0,
+        "costPerHour": 0.02,
+        "label": "Data Lake (S3)",
+        "variant": "s3"
+      }
+    },
+    {
+      "id": "dbt",
+      "type": "data_pipeline",
+      "position": {
+        "x": 900,
+        "y": 420
+      },
+      "config": {
+        "instances": 1,
+        "capacityPerInstance": 2000,
+        "latencyMs": 5000,
+        "queueLimit": 500000,
+        "hitRate": 0,
+        "costPerHour": 0.15,
+        "label": "dbt (Transforms)",
+        "variant": "dbt",
+        "batchSize": 10000
+      }
+    },
+    {
+      "id": "dashboard_db",
+      "type": "database",
+      "position": {
+        "x": 1130,
+        "y": 420
+      },
+      "config": {
+        "instances": 1,
+        "capacityPerInstance": 1200,
+        "latencyMs": 5,
+        "queueLimit": 3000,
+        "hitRate": 0,
+        "costPerHour": 0.15,
+        "label": "Dashboard DB (Postgres)",
+        "variant": "postgres"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "client",
+      "target": "collector"
+    },
+    {
+      "id": "e2",
+      "source": "collector",
+      "target": "kafka"
+    },
+    {
+      "id": "e3",
+      "source": "kafka",
+      "target": "flink"
+    },
+    {
+      "id": "e4",
+      "source": "kafka",
+      "target": "spark"
+    },
+    {
+      "id": "e5",
+      "source": "flink",
+      "target": "redis"
+    },
+    {
+      "id": "e6",
+      "source": "flink",
+      "target": "clickhouse"
+    },
+    {
+      "id": "e7",
+      "source": "spark",
+      "target": "data_lake"
+    },
+    {
+      "id": "e8",
+      "source": "data_lake",
+      "target": "dbt"
+    },
+    {
+      "id": "e9",
+      "source": "dbt",
+      "target": "dashboard_db"
+    }
+  ],
+  "trafficConfig": {
+    "requestsPerSecond": 10000,
+    "pattern": "constant",
+    "durationSeconds": 60
+  }
+}
