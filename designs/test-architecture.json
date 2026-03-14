@@ -1,0 +1,246 @@
+{
+  "name": "Untitled Architecture",
+  "nodes": [
+    {
+      "id": "client",
+      "type": "client",
+      "position": {
+        "x": 0,
+        "y": 180
+      },
+      "config": {
+        "instances": 1,
+        "capacityPerInstance": 0,
+        "latencyMs": 0,
+        "queueLimit": 0,
+        "hitRate": 0,
+        "costPerHour": 0,
+        "label": "Search Users"
+      }
+    },
+    {
+      "id": "lb",
+      "type": "load_balancer",
+      "position": {
+        "x": 200,
+        "y": 180
+      },
+      "config": {
+        "instances": 2,
+        "capacityPerInstance": 10000,
+        "latencyMs": 1,
+        "queueLimit": 8000,
+        "hitRate": 0,
+        "costPerHour": 0.05,
+        "label": "Load Balancer"
+      }
+    },
+    {
+      "id": "query_svc",
+      "type": "server",
+      "position": {
+        "x": 420,
+        "y": 180
+      },
+      "config": {
+        "instances": 4,
+        "capacityPerInstance": 1500,
+        "latencyMs": 8,
+        "queueLimit": 3000,
+        "hitRate": 0,
+        "costPerHour": 0.08,
+        "label": "Query Parser (Go)",
+        "variant": "go"
+      }
+    },
+    {
+      "id": "result_cache",
+      "type": "cache",
+      "position": {
+        "x": 650,
+        "y": 50
+      },
+      "config": {
+        "instances": 1,
+        "capacityPerInstance": 10000,
+        "latencyMs": 0.5,
+        "queueLimit": 0,
+        "hitRate": 0.6,
+        "costPerHour": 0.03,
+        "label": "Result Cache (Redis)",
+        "variant": "redis"
+      }
+    },
+    {
+      "id": "index_shard1",
+      "type": "database",
+      "position": {
+        "x": 650,
+        "y": 150
+      },
+      "config": {
+        "instances": 3,
+        "capacityPerInstance": 2000,
+        "latencyMs": 8,
+        "queueLimit": 5000,
+        "hitRate": 0,
+        "costPerHour": 0.2,
+        "label": "Index Shard A"
+      }
+    },
+    {
+      "id": "index_shard2",
+      "type": "database",
+      "position": {
+        "x": 650,
+        "y": 260
+      },
+      "config": {
+        "instances": 3,
+        "capacityPerInstance": 2000,
+        "latencyMs": 8,
+        "queueLimit": 5000,
+        "hitRate": 0,
+        "costPerHour": 0.2,
+        "label": "Index Shard B"
+      }
+    },
+    {
+      "id": "ranking_svc",
+      "type": "server",
+      "position": {
+        "x": 880,
+        "y": 180
+      },
+      "config": {
+        "instances": 3,
+        "capacityPerInstance": 1000,
+        "latencyMs": 15,
+        "queueLimit": 2000,
+        "hitRate": 0,
+        "costPerHour": 0.12,
+        "label": "Ranking Service"
+      }
+    },
+    {
+      "id": "crawl_queue",
+      "type": "queue",
+      "position": {
+        "x": 420,
+        "y": 380
+      },
+      "config": {
+        "instances": 1,
+        "capacityPerInstance": 50000,
+        "latencyMs": 2,
+        "queueLimit": 1000000,
+        "hitRate": 0,
+        "costPerHour": 0.08,
+        "label": "Crawl Queue (Kafka)",
+        "variant": "kafka"
+      }
+    },
+    {
+      "id": "crawler",
+      "type": "worker",
+      "position": {
+        "x": 650,
+        "y": 380
+      },
+      "config": {
+        "instances": 8,
+        "capacityPerInstance": 100,
+        "latencyMs": 200,
+        "queueLimit": 500,
+        "hitRate": 0,
+        "costPerHour": 0.06,
+        "label": "Crawler Workers"
+      }
+    },
+    {
+      "id": "doc_store",
+      "type": "blob_storage",
+      "position": {
+        "x": 880,
+        "y": 380
+      },
+      "config": {
+        "instances": 1,
+        "capacityPerInstance": 3000,
+        "latencyMs": 20,
+        "queueLimit": 0,
+        "hitRate": 0,
+        "costPerHour": 0.02,
+        "label": "Document Store (S3)",
+        "variant": "s3"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "client",
+      "target": "lb"
+    },
+    {
+      "id": "e2",
+      "source": "lb",
+      "target": "query_svc"
+    },
+    {
+      "id": "e3",
+      "source": "query_svc",
+      "target": "result_cache"
+    },
+    {
+      "id": "e4",
+      "source": "query_svc",
+      "target": "index_shard1"
+    },
+    {
+      "id": "e5",
+      "source": "query_svc",
+      "target": "index_shard2"
+    },
+    {
+      "id": "e6",
+      "source": "index_shard1",
+      "target": "ranking_svc"
+    },
+    {
+      "id": "e7",
+      "source": "index_shard2",
+      "target": "ranking_svc"
+    },
+    {
+      "id": "e8",
+      "source": "query_svc",
+      "target": "crawl_queue"
+    },
+    {
+      "id": "e9",
+      "source": "crawl_queue",
+      "target": "crawler"
+    },
+    {
+      "id": "e10",
+      "source": "crawler",
+      "target": "doc_store"
+    },
+    {
+      "id": "e11",
+      "source": "crawler",
+      "target": "index_shard1"
+    },
+    {
+      "id": "e12",
+      "source": "crawler",
+      "target": "index_shard2"
+    }
+  ],
+  "trafficConfig": {
+    "requestsPerSecond": 100,
+    "pattern": "constant",
+    "durationSeconds": 3
+  }
+}
